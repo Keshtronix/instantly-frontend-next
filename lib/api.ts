@@ -1,0 +1,529 @@
+import type {
+  AuthResponse,
+  LoginType,
+  RegisterType,
+  UpdateProfileInput,
+  CreateAddressInput,
+  AddressResponse,
+  GetAddressesResponse,
+  ForgotPasswordType,
+} from "@/types/auth.type";
+import type {
+  CreateOrderInput,
+  CreateOrderResponse,
+  GetOrdersResponse,
+  GetOrderByIdResponse,
+} from "@/types/order.type";
+import API from "./axios-client";
+import type { CategoryResponseType } from "@/types/categories.type";
+import type {
+  DealsResponseType,
+  ProductParams,
+  ProductResponseType,
+  ProductDetailResponseType,
+  ReviewsResponseType,
+} from "@/types/products.type";
+import type { CartResponseType } from "@/types/cart.type";
+import type { WishlistResponse } from "@/types/wishlist.type";
+
+import type {
+  GetCouponsResponse,
+  CreateCouponInput,
+  CouponResponse,
+  ApplyCouponResponse,
+} from "@/types/coupon.type";
+
+// import type {
+//   CustomerType,
+//   CustomersResponseType,
+//   CustomerParams,
+//   CustomerDetailResponseType,
+//   UpdateCustomerPayload,
+//   UpdateCustomerStatusPayload,
+// } from "@/types/customer.type";
+
+import { PROTECTED_ROUTES as ROUTES } from "@/constants/routes";
+ // adjust to your actual import
+import type {
+  CreateCategoryPayload,
+  UpdateCategoryPayload,
+  CreateSubCategoryPayload,
+  UpdateSubCategoryPayload,
+} from "@/types/categories.type";
+
+
+
+
+export const loginMutationFn = async (
+  data: LoginType,
+): Promise<AuthResponse> => {
+  const response = await API.post<AuthResponse>("/auth/login", data);
+  return response.data;
+};
+
+export const registerMutationFn = async (
+  data: RegisterType,
+): Promise<AuthResponse> => {
+  const response = await API.post<AuthResponse>("/auth/register", data);
+  return response.data;
+};
+
+export const logoutMutationFn = async (): Promise<{ message: string }> => {
+  const response = await API.post<{ message: string }>("/auth/logout");
+  return response.data;
+};
+
+export const getCurrentUser = async (): Promise<AuthResponse> => {
+  const response = await API.get<AuthResponse>("/auth/status");
+  return response.data;
+};
+
+export const getAllCategoriesQueryFn =
+  async (): Promise<CategoryResponseType> => {
+    const response = await API.get<CategoryResponseType>("/categories");
+    return response.data;
+  };
+
+export const getProductDealsQueryFn = async (
+  limit: number = 6,
+): Promise<DealsResponseType> => {
+  const response = await API.get<DealsResponseType>("/products/deals", {
+    params: { limit },
+  });
+  return response.data;
+};
+
+export const getProductsQueryFn = async (
+  params?: ProductParams,
+): Promise<ProductResponseType> => {
+  const queryParams: Record<string, any> = {};
+  if (params) {
+    if (params.categoryId !== undefined)
+      queryParams.categoryId = params.categoryId;
+    if (params.hasDiscount !== undefined)
+      queryParams.hasDiscount = params.hasDiscount;
+    if (params.inStock !== undefined) queryParams.inStock = params.inStock;
+    if (params.minPrice !== undefined) queryParams.minPrice = params.minPrice;
+    if (params.maxPrice !== undefined) queryParams.maxPrice = params.maxPrice;
+    if (params.sort !== undefined) queryParams.sort = params.sort;
+    if (params.keyword !== undefined) queryParams.keyword = params.keyword;
+    if (params.page !== undefined) queryParams.page = params.page;
+    if (params.limit !== undefined) queryParams.limit = params.limit;
+    if (params.skip !== undefined) queryParams.skip = params.skip;
+  }
+  const response = await API.get<ProductResponseType>("/products", {
+    params: queryParams,
+  });
+  return response.data;
+};
+
+export const getProductBySlugQueryFn = async (
+  slug: string,
+): Promise<ProductDetailResponseType> => {
+  const response = await API.get<ProductDetailResponseType>(
+    `/products/${slug}`,
+  );
+  return response.data;
+};
+
+export const getProductReviewsQueryFn = async (
+  slug: string,
+  params?: { page?: number; limit?: number },
+): Promise<ReviewsResponseType> => {
+  const response = await API.get<ReviewsResponseType>(
+    `/products/${slug}/reviews`,
+    {
+      params,
+    },
+  );
+  return response.data;
+};
+
+export const getCartQueryFn = async (): Promise<CartResponseType> => {
+  const response = await API.get<CartResponseType>("/cart");
+  return response.data;
+};
+
+export const updateCartMutationFn = async (
+  items: { productId: string; quantity: number }[],
+): Promise<CartResponseType> => {
+  const response = await API.post<CartResponseType>("/cart", { items });
+  return response.data;
+};
+
+export const getAddressesQueryFn = async (): Promise<GetAddressesResponse> => {
+  const response = await API.get<GetAddressesResponse>("/addresses");
+  return response.data;
+};
+
+export const createAddressMutationFn = async (
+  data: CreateAddressInput,
+): Promise<AddressResponse> => {
+  const response = await API.post<AddressResponse>("/addresses", data);
+  return response.data;
+};
+
+// brocky
+export const deleteAddressMutationFn = async (
+  addressId: string,
+): Promise<{ message: string }> => {
+  const response = await API.delete<{ message: string }>(
+    `/addresses/${addressId}`,
+  );
+  return response.data;
+};
+
+export const createOrderMutationFn = async (
+  data: CreateOrderInput,
+): Promise<CreateOrderResponse> => {
+  const response = await API.post<CreateOrderResponse>("/orders", data);
+  return response.data;
+};
+
+export const getOrdersQueryFn = async (): Promise<GetOrdersResponse> => {
+  const response = await API.get<GetOrdersResponse>("/orders");
+  return response.data;
+};
+
+export const getOrderByIdQueryFn = async (
+  orderId: string,
+): Promise<GetOrderByIdResponse> => {
+  const response = await API.get<GetOrderByIdResponse>(`/orders/${orderId}`);
+  return response.data;
+};
+
+export const getReviewableOrderItemsQueryFn = async (): Promise<any> => {
+  const response = await API.get("/reviews/reviewable");
+  return response.data;
+};
+
+export const getUserReviewsQueryFn = async (): Promise<any> => {
+  const response = await API.get("/reviews");
+  return response.data;
+};
+
+export const createReviewMutationFn = async (data: {
+  orderId: string;
+  orderItemId: string;
+  rating: number;
+  comment: string;
+}): Promise<any> => {
+  const response = await API.post("/reviews", data);
+  return response.data;
+};
+
+export const getAdminAnalyticsQueryFn = async (): Promise<any> => {
+  const response = await API.get("/admin/analytics");
+  return response.data;
+};
+
+export const getAdminOrdersQueryFn = async ({
+  page,
+  limit,
+}: {
+  page: number;
+  limit: number;
+}): Promise<any> => {
+  const response = await API.get("/admin/orders", {
+    params: { page, limit },
+  });
+  return response.data;
+};
+
+export const updateOrderStatusMutationFn = async ({
+  orderId,
+  status,
+  note,
+}: {
+  orderId: string;
+  status: string;
+  note?: string;
+}): Promise<any> => {
+  const response = await API.put(`/admin/orders/${orderId}/status`, {
+    status,
+    note,
+  });
+  return response.data;
+};
+
+export const getAdminProductsQueryFn = async ({
+  page,
+  limit,
+}: {
+  page: number;
+  limit: number;
+}): Promise<any> => {
+  const response = await API.get("/admin/products", {
+    params: { page, limit },
+  });
+  return response.data;
+};
+
+export const createProductMutationFn = async (data: {
+  categoryId: string;
+  name: string;
+  description?: string;
+  images: string[];
+  originalPrice: number;
+  discountPercent?: number;
+  discountLabel?: string | null;
+  unit: string;
+  stockCount?: number;
+  isActive?: boolean;
+}): Promise<any> => {
+  const response = await API.post("/admin/products", data);
+  return response.data;
+};
+
+export const uploadProductImagesMutationFn = async (
+  files: File[],
+): Promise<{ images: string[] }> => {
+  const formData = new FormData();
+  files.forEach((file) => formData.append("images", file));
+  const response = await API.post("/admin/products/upload", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+};
+
+// brocky
+
+// Admin Product Management
+export const getAdminProductByIdQueryFn = async (id: string): Promise<any> => {
+  const response = await API.get(`/admin/products/${id}`);
+  return response.data;
+};
+
+export const updateProductMutationFn = async ({
+  id,
+  data,
+}: {
+  id: string;
+  data: Record<string, any>;
+}): Promise<any> => {
+  const response = await API.patch(`/admin/products/${id}`, data);
+  return response.data;
+};
+
+export const deleteProductMutationFn = async (id: string): Promise<any> => {
+  const response = await API.delete(`/admin/products/${id}`);
+  return response.data;
+};
+
+export const generateProductAiMutationFn = async (data: {
+  action: "rephrase-title" | "generate-desc";
+  title: string;
+  unit?: string;
+  description?: string;
+}): Promise<{ result: string }> => {
+  const response = await API.post("/admin/ai/generate", data);
+  return response.data;
+};
+
+// brocky
+export const updateProfileMutationFn = async (
+  data: UpdateProfileInput,
+): Promise<AuthResponse> => {
+  const response = await API.put<AuthResponse>("/auth/profile", data);
+  return response.data;
+};
+
+// brocky wishlist
+
+export const getWishlistQueryFn = async (): Promise<WishlistResponse> => {
+  const response = await API.get<WishlistResponse>("/wishlist");
+  return response.data;
+};
+
+export const addToWishlistMutationFn = async (
+  productId: string,
+): Promise<WishlistResponse> => {
+  const response = await API.post<WishlistResponse>(`/wishlist/${productId}`);
+  return response.data;
+};
+
+export const removeFromWishlistMutationFn = async (
+  productId: string,
+): Promise<WishlistResponse> => {
+  const response = await API.delete<WishlistResponse>(`/wishlist/${productId}`);
+  return response.data;
+};
+
+
+// brocky coupon
+
+
+export const getAdminCouponsQueryFn = async ({
+  page,
+  limit,
+}: {
+  page: number;
+  limit: number;
+}): Promise<GetCouponsResponse> => {
+  const response = await API.get<GetCouponsResponse>("/admin/coupons", {
+    params: { page, limit },
+  });
+  return response.data;
+};
+
+export const createCouponMutationFn = async (
+  data: CreateCouponInput
+): Promise<CouponResponse> => {
+  const response = await API.post<CouponResponse>("/admin/coupons", data);
+  return response.data;
+};
+
+export const toggleCouponActiveMutationFn = async (
+  couponId: string
+): Promise<CouponResponse> => {
+  const response = await API.patch<CouponResponse>(`/admin/coupons/${couponId}/toggle`);
+  return response.data;
+};
+
+export const deleteCouponMutationFn = async (
+  couponId: string
+): Promise<{ message: string }> => {
+  const response = await API.delete<{ message: string }>(`/admin/coupons/${couponId}`);
+  return response.data;
+};
+
+
+export const validateCouponMutationFn = async (data: {
+  code: string;
+  subtotal: number;
+}): Promise<ApplyCouponResponse> => {
+  const response = await API.post<ApplyCouponResponse>("/coupons/validate", data);
+  return response.data;
+};
+
+
+
+//brocky customer management
+
+
+export const getCustomersQueryFn = async ({
+  page,
+  limit,
+  status,
+  search,
+}: {
+  page: number;
+  limit: number;
+  status?: string;
+  search?: string;
+}): Promise<any> => {
+  const response = await API.get("/admin/customers", {
+    params: { page, limit, status, search },
+  });
+  return response.data;
+};
+
+export const getCustomerByIdQueryFn = async (id: string): Promise<any> => {
+  const response = await API.get(`/admin/customers/${id}`);
+  return response.data;
+};
+
+export const updateCustomerMutationFn = async ({
+  id,
+  data,
+}: {
+  id: string;
+  data: {
+    name?: string;
+    email?: string;
+    phone?: string;
+  };
+}): Promise<any> => {
+  const response = await API.patch(`/admin/customers/${id}`, data);
+  return response.data;
+};
+
+export const updateCustomerStatusMutationFn = async ({
+  id,
+  status,
+  reason,
+}: {
+  id: string;
+  status: "active" | "suspended" | "banned";
+  reason?: string;
+}): Promise<any> => {
+  const response = await API.patch(`/admin/customers/${id}/status`, {
+    status,
+    reason,
+  });
+  return response.data;
+};
+
+
+
+
+
+// Categories
+export const getCategoriesQueryFn = async (): Promise<any> => {
+  const response = await API.get(ROUTES.ADMIN_CATEGORIES);
+  return response.data;
+};
+
+export const createCategoryMutationFn = async (
+  data: CreateCategoryPayload
+): Promise<any> => {
+  const response = await API.post(ROUTES.ADMIN_CATEGORIES, data);
+  return response.data;
+};
+
+export const updateCategoryMutationFn = async ({
+  id,
+  data,
+}: {
+  id: string;
+  data: UpdateCategoryPayload;
+}): Promise<any> => {
+  const response = await API.patch(ROUTES.ADMIN_CATEGORY_DETAIL(id), data);
+  return response.data;
+};
+
+export const deleteCategoryMutationFn = async (id: string): Promise<any> => {
+  const response = await API.delete(ROUTES.ADMIN_CATEGORY_DETAIL(id));
+  return response.data;
+};
+
+// Sub-categories
+export const getSubCategoriesQueryFn = async ({
+  categoryId,
+}: {
+  categoryId?: string;
+} = {}): Promise<any> => {
+  const response = await API.get(ROUTES.ADMIN_SUB_CATEGORIES, {
+    params: { categoryId },
+  });
+  return response.data;
+};
+
+export const createSubCategoryMutationFn = async (
+  data: CreateSubCategoryPayload
+): Promise<any> => {
+  const response = await API.post(ROUTES.ADMIN_SUB_CATEGORIES, data);
+  return response.data;
+};
+
+export const updateSubCategoryMutationFn = async ({
+  id,
+  data,
+}: {
+  id: string;
+  data: UpdateSubCategoryPayload;
+}): Promise<any> => {
+  const response = await API.patch(ROUTES.ADMIN_SUB_CATEGORY_DETAIL(id), data);
+  return response.data;
+};
+
+export const deleteSubCategoryMutationFn = async (id: string): Promise<any> => {
+  const response = await API.delete(ROUTES.ADMIN_SUB_CATEGORY_DETAIL(id));
+  return response.data;
+};
+
+
+export const forgotPasswordMutationFn = async (data: ForgotPasswordType) =>
+  (await API.post("/auth/forgot-password", data)).data;
