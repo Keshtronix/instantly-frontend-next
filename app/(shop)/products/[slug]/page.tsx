@@ -57,6 +57,7 @@ const ProductDetailPage = () => {
 
   const handleAddToCart = () => {
     if (!product) return;
+    const safeQuantity = Math.min(quantity, product.stockCount);
     addToCart(
       {
         productId: product._id,
@@ -69,7 +70,7 @@ const ProductDetailPage = () => {
         unit: product.unit,
         stockCount: product.stockCount,
       },
-      quantity,
+      safeQuantity,
     );
   };
 
@@ -277,8 +278,10 @@ const ProductDetailPage = () => {
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    className="text-white hover:bg-white/10 hover:text-white"
+                    className="text-white hover:bg-white/10 hover:text-white disabled:opacity-40"
+                    disabled={cartItem.quantity >= product.stockCount}
                     onClick={() => {
+                      if (cartItem.quantity >= product.stockCount) return;
                       updateQuantity(product._id, cartItem.quantity + 1);
                     }}
                   >
@@ -312,7 +315,12 @@ const ProductDetailPage = () => {
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    onClick={() => setQuantity((value) => value + 1)}
+                    disabled={quantity >= product.stockCount}
+                    onClick={() =>
+                      setQuantity((value) =>
+                        Math.min(product.stockCount, value + 1),
+                      )
+                    }
                   >
                     <Plus />
                   </Button>
