@@ -1,5 +1,6 @@
 import "server-only";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 export type Session = {
   userId: string;
@@ -35,7 +36,6 @@ export async function getSession(): Promise<Session | null> {
 export async function requireSession(): Promise<Session> {
   const session = await getSession();
   if (!session) {
-    const { redirect } = await import("next/navigation");
     redirect("/");
   }
   return session;
