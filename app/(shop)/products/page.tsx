@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import ProductCard from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -22,7 +23,7 @@ import { getAllCategoriesQueryFn, getProductsQueryFn } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const ProductsPage = () => {
+const ProductsPageContent = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -306,6 +307,14 @@ const ProductsPage = () => {
         </section>
       </div>
     </div>
+  );
+};
+
+const ProductsPage = () => {
+  return (
+    <Suspense fallback={null}>
+      <ProductsPageContent />
+    </Suspense>
   );
 };
 
