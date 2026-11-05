@@ -69,9 +69,8 @@ export const AuthDialog = () => {
   // Login Mutation
   const loginMutation = useMutation({
     mutationFn: loginMutationFn,
-    onSuccess: async (data) => {
+    onSuccess: async () => {
 
-      queryClient.setQueryData(["current-user"], data);
       await queryClient.invalidateQueries({ queryKey: ["current-user"] });
       await fetchCart();
       toast.success("Successfully logged in!");

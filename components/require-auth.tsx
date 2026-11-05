@@ -2,8 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { getCurrentUser } from "@/lib/api";
+import { useUser } from "@/hooks/use-user";
 
 type Props = {
   children: React.ReactNode;
@@ -13,21 +12,15 @@ type Props = {
 export default function RequireAuth({ children, adminOnly = false }: Props) {
   const router = useRouter();
 
-  const { data, isLoading,isFetching, isError, error, refetch } = useQuery({
-    queryKey: ["current-user"],
-    queryFn: getCurrentUser,
-    retry: 1,
-     refetchOnMount: "always",
-  });
+  const { data: user, isLoading, isFetching, isError, error, refetch } = useUser();
 
-  const user = data?.user;
   const isPending = isLoading || (isFetching && !user);
   const status = (error as any)?.response?.status;
   const isUnauthorized = status === 401 || (!isError && !user);
   const isAllowed = !!user && (!adminOnly || user.isAdmin === true);
 
   useEffect(() => {
-   if (isPending) return;
+    if (isPending) return;
     if (isUnauthorized || (user && !isAllowed)) {
       router.replace("/?auth=login");
     }
