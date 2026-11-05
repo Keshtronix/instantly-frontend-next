@@ -7,7 +7,7 @@ interface CustomError extends AxiosError {
 const options = {
     baseURL: BASE_API_URL,
     withCredentials: true,
-    timeout: 10000,
+    timeout: 60000,
 };
 const API = axios.create(options);
 

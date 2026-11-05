@@ -3,6 +3,8 @@ import AccountSidebar from "@/components/account-sidebar";
 import { getSession } from "@/lib/session"; // your server-side session util
 import { redirect } from "next/navigation";
 
+import RequireAuth from "@/components/require-auth"; // import the RequireAuth component
+
 export default async function AccountLayout({
   children,
 }: {
@@ -13,9 +15,11 @@ export default async function AccountLayout({
   if (!session) redirect("/");
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[260px_1fr] items-start mt-8">
-      <AccountSidebar />
-      {children}
-    </div>
+    <RequireAuth>
+      <div className="grid gap-8 lg:grid-cols-[260px_1fr] items-start mt-8">
+        <AccountSidebar />
+        {children}
+      </div>
+    </RequireAuth>
   );
 }
