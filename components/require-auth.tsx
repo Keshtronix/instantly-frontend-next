@@ -13,29 +13,44 @@ type Props = {
 export default function RequireAuth({ children, adminOnly = false }: Props) {
   const router = useRouter();
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["current-user"],
     queryFn: getCurrentUser,
-    retry: false,
+    retry: 1,
   });
 
   const user = data?.user;
-  const isAllowed = !!user && (!adminOnly || user.role === "admin");
+  const status = (error as any)?.response?.status;
+  const isUnauthorized = status === 401 || (!isError && !user);
+  const isAllowed = !!user && (!adminOnly || user.isAdmin === true);
 
   useEffect(() => {
     if (isLoading) return;
-    if (isError || !isAllowed) {
-      router.replace("/?auth=login"); // same behavior as your old middleware
+    if (isUnauthorized || (user && !isAllowed)) {
+      router.replace("/?auth=login");
     }
-  }, [isLoading, isError, isAllowed, router]);
+  }, [isLoading, isUnauthorized, user, isAllowed, router]);
 
-  if (isLoading || !isAllowed) {
+  if (isLoading) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center text-sm text-muted-foreground">
         Loading...
       </div>
     );
   }
+
+  if (isError && !isUnauthorized) {
+    return (
+      <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 text-sm">
+        <p>Couldn't reach the server.</p>
+        <button className="underline" onClick={() => refetch()}>
+          Try again
+        </button>
+      </div>
+    );
+  }
+
+  if (!isAllowed) return null;
 
   return <>{children}</>;
 }
